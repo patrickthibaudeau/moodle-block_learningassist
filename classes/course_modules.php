@@ -317,6 +317,7 @@ class course_modules
         $fs = get_file_storage();
         $files = $fs->get_area_files($context->id, 'mod_resource', 'content');
         $file_info = new \stdClass();
+        $content = '';
 
         // Loop through the files
         foreach ($files as $file) {
@@ -336,23 +337,74 @@ class course_modules
 
                 // Set the file name
                 $file_name = $file->get_filename();
+                // Get file type
+                $file_type = $file->get_mimetype();
+
                 // Save a copy of the file
                 $file->copy_content_to($path . $file_name);
-                // Get the content of the file
-                $content = file_get_contents($path . $file_name);
-                file_put_contents('/var/www/moodledata/temp/resource_content.txt', $content);
-                $file_info->content = base64_encode($content);
-                $file_info->file_name = 'resource ' . $id . ' ' . $file_name;
+
+                switch ($file_type) {
+                    case 'application/pdf':
+                        $content .= self::get_pdf_content($path . $file_name);
+                        break;
+                    case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                        $content .= self::get_docx_content($path . $file_name);
+                        break;
+                }
+
             }
         }
-        // If no files are available, set the content to empty
-        if (empty($file_info)) {
-            $file_info->file_name = '';
-            $file_info->content = '';
-        }
 
-        return $file_info;
+
+        return $content;
     }
+
+    /**
+     * Get PDF Content
+     * @param $path
+     * @return string
+     * @throws \Exception
+     */
+    public static function get_pdf_content($path) {
+        global $CFG;
+        require_once($CFG->dirroot . '/blocks/learningassist/classes/pdfparser/alt_autoload.php-dist');
+        $content = '';
+        $parser = new \Smalot\PdfParser\Parser();
+        $pdf = $parser->parseFile($path);
+        $content = $pdf->getText();
+
+        return $content;
+    }
+
+    /**
+     * Get DOCX Content
+     * @param $path
+     * @return string
+     */
+    public static function get_docx_content($path) {
+        global $CFG;
+        $striped_content = '';
+        $content = '';
+
+        // Open zip file
+        $zip = new \ZipArchive();
+        if ($zip->open($path) === true) {
+            // Read the content of the document.xml file
+            $xml = $zip->getFromName('word/document.xml');
+            // Close the zip file
+            $zip->close();
+            // Load the XML content
+            $xml = simplexml_load_string($xml);
+            // Register the namespaces
+            $xml->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+            // Get the text content
+            foreach ($xml->xpath('//w:t') as $text) {
+                $striped_content .= (string)$text;
+            }
+        }
+        return $striped_content;
+    }
+
 
     /**
      * Get folder files
