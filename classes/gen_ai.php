@@ -4,11 +4,6 @@ namespace block_learningassist;
 
 abstract class gen_ai
 {
-    const UNIVERSITY = 1;
-    const COLLEGE = 2;
-    const HIGH_SCHOOL = 3;
-    const ELEMENTARY = 4;
-
     /**
      * This function uses the built in Moodle AI providers and placements
      * @param $context \stdClass
