@@ -21,7 +21,7 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
+use aiplacement_editor\utils;
 use core_ai\manager;
 
 class block_learningassist extends block_base
