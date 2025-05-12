@@ -30,23 +30,23 @@ function display_modules() {
             }]);
 
             display_modules[0].done(function (results) {
-                notification.confirm(Str.get_string('train_course_assistant', 'block_ai_assistant'),
+                notification.confirm(Str.get_string('select_study_subject', 'block_learningassist'),
                     results,
-                    Str.get_string('save', 'block_ai_assistant'),
-                    Str.get_string('cancel', 'block_ai_assistant'), function () {
+                    Str.get_string('save', 'block_learningassist'),
+                    Str.get_string('cancel', 'block_learningassist'), function () {
 
                     });
 
                 setTimeout(function () {
 
 
-                    var blocks = document.querySelectorAll('.blockAiAssistant');
+                    var blocks = document.querySelectorAll('.blockLearningAssist');
                     blocks.forEach(function (block) {
                         block.addEventListener('click', function () {
                             var dataId = this.getAttribute('data-id');
-                            var contentClassName = 'blockAiAssistantContent-' + dataId;
+                            var contentClassName = 'blockLearningAssistContent-' + dataId;
                             var contentBlock = document.querySelector('.' + contentClassName);
-                            var folderIcon = this.querySelector('.blockAiAssistantFolderIcon');
+                            var folderIcon = this.querySelector('.blockLearningAssistFolderIcon');
                             if (contentBlock.style.display === 'none' || contentBlock.style.display === '') {
                                 contentBlock.style.display = 'block';
                                 folderIcon.classList.remove('fa-folder');
