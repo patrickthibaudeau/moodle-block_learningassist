@@ -25,7 +25,7 @@ abstract class gen_ai
             array(
                 'role' => 'user',
                 'content' => $prompt
-            )
+            ),
         );
         // Get AI manager.
         $manager = \core\di::get(\core_ai\manager::class);
