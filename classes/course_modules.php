@@ -120,6 +120,12 @@ class course_modules
         return array($modrec, $cmrec);
     }
 
+    /**
+     * Get module content
+     * @param $cmid
+     * @return array|stdClass|string
+     * @throws \moodle_exception
+     */
     public static function get_module_content($cmid)
     {
         // Get module
@@ -169,6 +175,17 @@ class course_modules
         }
 
         return $content;
+    }
+
+    /**
+     * Get module name
+     * @param $cmid
+     * @return mixed
+     * @throws \moodle_exception
+     */
+    public static function get_instance_name($cmid) {
+        $mod = self::get_module_from_cmid($cmid);
+        return $mod[0]->name;
     }
 
     /**

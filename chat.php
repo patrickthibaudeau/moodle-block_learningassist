@@ -18,6 +18,7 @@ $context = context_course::instance($course_id);
 
 // Getting Module content.
 $content = course_modules::get_module_content($cmid);
+$chat_header = course_modules::get_instance_name($cmid);
 
 $system_message = get_string($chat_type . '_system_message', 'block_learningassist') . "\n";
 $system_message .= $content;
@@ -33,6 +34,7 @@ $messages = [
 $data = [
     'courseid' => $course_id,
     'chattype' => $chat_type,
+    'chatheader' => $chat_header,
     'messages' => $messages,
 ];
 
