@@ -2,6 +2,11 @@
 
 namespace block_learningassist;
 
+require_once("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown.php");
+require_once("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown/Process/ParseMarkdown.php");
+
+use FastVolt\Helper;
+
 abstract class gen_ai
 {
     /**
@@ -37,7 +42,7 @@ abstract class gen_ai
                 switch ($provider_instance->provider) {
                     case 'aiprovider_azureai':
                         $provider = self::get_azure_provider($provider_instance);
-                        return self::azure_openai_chat($messages,
+                        $response = self::azure_openai_chat($messages,
                             $provider->apikey,
                             $provider->endpoint,
                             $provider->deployment,
@@ -47,6 +52,11 @@ abstract class gen_ai
                 }
             }
         }
+
+        // Set Markdown parser
+        $markdown = Helper\Markdown::new();
+        $markdown->setContent($response);
+        return $markdown->toHTML();
     }
 
     /**
