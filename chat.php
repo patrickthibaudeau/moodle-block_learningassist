@@ -17,10 +17,11 @@ $chat_type_name = get_string($chat_type, 'block_learningassist');
 $context = context_course::instance($course_id);
 
 // Getting Module content.
-$prompt = course_modules::get_module_content($cmid);
+$content = course_modules::get_module_content($cmid);
 
 $system_message = get_string($chat_type . '_system_message', 'block_learningassist') . "\n";
-$prompt .= get_string($chat_type . '_prompt', 'block_learningassist') ;
+$system_message .= $content;
+$prompt = get_string($chat_type . '_prompt', 'block_learningassist') ;
 
 $messages = [
     [
