@@ -1,7 +1,21 @@
+<input type="hidden" id="ai-policy-status" value="{{ai_policy_status}}">
 <div class="row">
     <div class="col">
-       <a href="{{config.wwwroot}}/blocks/learningassist/chat.php?courseid={{courseid}}&chattype=tutor" class="btn btn-primary">
-            Chat
-        </a>
+       <button type="button"
+               class="btn btn-link block-learningassist-course-module-btn"
+               data-courseid="{{courseid}}"
+               data-chattype="tutor">
+           {{#str}}tutor, block_learningassist{{/str}}
+       </button>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <button type="button"
+                class="btn btn-link block-learningassist-course-module-btn"
+                data-courseid="{{courseid}}"
+                data-chattype="quiz">
+            {{#str}}quiz, block_learningassist{{/str}}
+        </button>
     </div>
 </div>

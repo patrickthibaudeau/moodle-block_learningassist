@@ -14,7 +14,6 @@ abstract class gen_ai
     public static function make_call($system_message, $prompt, $lang = 'en', $decode = false)
     {
         global $USER;
-
         // Always return the response in the language of the course
         $prompt .= "\n\nYou must return the response in the language based on this language code: $lang.\n\n";
 
@@ -91,6 +90,8 @@ abstract class gen_ai
         $result = curl_exec($ch);
         curl_close($ch);
         $response = json_decode($result, true);
-        return $response['choices'][0]['message']['content'] ?? '';
+        $content = $response['choices'][0]['message']['content'] ?? '';
+        $content = str_replace('```html', '', $content);
+        return $content;
     }
 }

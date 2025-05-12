@@ -18,6 +18,8 @@ class course_modules
         $modules = get_fast_modinfo($courseid);
         // Get all sections from $modules and print them.
         $sections = $modules->get_section_info_all();
+        // Get all accepted modules
+        $accepted_modules = array('page', 'label', 'book', 'resource', 'folder', 'glossary');
         // Loop through sections
         $i = 0; // Used to count the number of sections
         foreach ($sections as $sectionnum => $section) {
@@ -45,91 +47,46 @@ class course_modules
                 $section_mods = $modules->sections[$section->section];
                 foreach ($section_mods as $cmid) {
                     $mod = self::get_module_from_cmid($cmid);
-                    // Only get the modules that are accepted
+                    if (in_array($mod[1]->modname, $accepted_modules)) {
+                        // Only get the modules that are accepted
 
-                    $number_of_modules_in_section++;
-                    $course_structure->sections[$i]->modules[$x] = new \stdClass();
-                    $course_structure->sections[$i]->modules[$x]->name = $mod[0]->name;
-                    $course_structure->sections[$i]->modules[$x]->intro = strip_tags($mod[0]->intro);
-                    $course_structure->sections[$i]->modules[$x]->instanceid = $mod[0]->id;
-                    $course_structure->sections[$i]->modules[$x]->cmid = $mod[1]->id;
-                    $course_structure->sections[$i]->modules[$x]->modname = $mod[1]->modname;
+                        $number_of_modules_in_section++;
+                        $course_structure->sections[$i]->modules[$x] = new \stdClass();
+                        $course_structure->sections[$i]->modules[$x]->name = $mod[0]->name;
+                        $course_structure->sections[$i]->modules[$x]->instanceid = $mod[0]->id;
+                        $course_structure->sections[$i]->modules[$x]->cmid = $mod[1]->id;
+                        $course_structure->sections[$i]->modules[$x]->modname = $mod[1]->modname;
 
-                    // Get module pix
-                    // Prepare the content based on the type of module
-                    switch ($mod[1]->modname) {
-                        case 'page':
-                            $course_structure->sections[$i]->modules[$x]->content = self::set_module_content(
-                                $mod[0]->id,
-                                $mod[0]->name,
-                                $mod[0]->intro,
-                                $mod[0]->content,
-                                $mod[1]->modname
-                            );
-                            $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'page');
-                            $course_structure->sections[$i]->modules[$x]->icontype = 'content';
-                            break;
-                        case 'label':
-                            $course_structure->sections[$i]->modules[$x]->content = self::set_module_content(
-                                $mod[0]->id,
-                                $mod[0]->name,
-                                $mod[0]->intro,
-                                '',
-                                $mod[1]->modname
-                            );
-                            $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'label');
-                            $course_structure->sections[$i]->modules[$x]->icontype = 'content';
-                            break;
-                        case 'book':
-                            // Must get book content
-                            $content = self::get_book_content($mod[0]->id);
-                            $course_structure->sections[$i]->modules[$x]->content = self::set_module_content(
-                                $mod[0]->id,
-                                $mod[0]->name,
-                                $mod[0]->intro,
-                                $content,
-                                $mod[1]->modname
-                            );
-                            $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'book');
-                            $course_structure->sections[$i]->modules[$x]->icontype = 'content';
-                            break;
-                        case 'resource': // File
-                            $course_structure->sections[$i]->modules[$x]->content = self::get_files_from_resource(
-                                $mod[1]->id,
-                                $mod[0]->id
-                            );
-                            $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'resource');
-                            $course_structure->sections[$i]->modules[$x]->icontype = 'content';
-                            break;
-                        case 'folder':
-                            $folder_files = self::get_folder_files(
-                                $mod[1]->id,
-                                $mod[0]->id,
-                                $mod[0]->name,
-                                $mod[0]->intro
-                            );
-                            $course_structure->sections[$i]->modules[$x]->content = $folder_files->content;
-                            $course_structure->sections[$i]->modules[$x]->files = $folder_files->files;
-                            $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'folder');
-                            $course_structure->sections[$i]->modules[$x]->icontype = 'content';
-                            break;
-                        case 'glossary':
-                            $content = self::get_glossary_entries($mod[1]->id, $mod[0]->id, $mod[0]->name);
-                            $course_structure->sections[$i]->modules[$x]->content = self::set_module_content(
-                                $mod[0]->id,
-                                $mod[0]->name,
-                                $mod[0]->intro,
-                                $content->content,
-                                $mod[1]->modname
-                            );
-                            $course_structure->sections[$i]->modules[$x]->files = $content->files;
-                            $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'glossary');
-                            $course_structure->sections[$i]->modules[$x]->icontype = 'collaboration';
+                        switch ($mod[1]->modname) {
+                            case 'page':
+                                $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'page');
+                                $course_structure->sections[$i]->modules[$x]->icontype = 'content';
+                                break;
+                            case 'label':
+                                $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'label');
+                                $course_structure->sections[$i]->modules[$x]->icontype = 'content';
+                                break;
+                            case 'book':
+                                $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'book');
+                                $course_structure->sections[$i]->modules[$x]->icontype = 'content';
+                                break;
+                            case 'resource': // File
+                                $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'resource');
+                                $course_structure->sections[$i]->modules[$x]->icontype = 'content';
+                                break;
+                            case 'folder':
+                                $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'folder');
+                                $course_structure->sections[$i]->modules[$x]->icontype = 'content';
+                                break;
+                            case 'glossary':
+                                $course_structure->sections[$i]->modules[$x]->icon = $OUTPUT->image_url('monologo', 'glossary');
+                                $course_structure->sections[$i]->modules[$x]->icontype = 'collaboration';
 
-                            break;
+                                break;
+                        }
+
+                        $x++;
                     }
-                    $x++;
-
                 }
             }
             $course_structure->sections[$i]->number_of_modules = $number_of_modules_in_section;
@@ -161,6 +118,57 @@ class course_modules
         $cmrec->name = $modrec->name;
 
         return array($modrec, $cmrec);
+    }
+
+    public static function get_module_content($cmid)
+    {
+        // Get module
+        $mod = self::get_module_from_cmid($cmid);
+
+        switch ($mod[1]->modname) {
+            case 'page':
+                $content = self::set_module_content(
+                    $mod[0]->id,
+                    $mod[0]->name,
+                    $mod[0]->intro,
+                    $mod[0]->content,
+                    $mod[1]->modname
+                );
+                break;
+            case 'label':
+                $content = self::set_module_content(
+                    $mod[0]->id,
+                    $mod[0]->name,
+                    $mod[0]->intro,
+                    '',
+                    $mod[1]->modname
+                );
+                break;
+            case 'book':
+                // Must get book content
+                $content = self::get_book_content($mod[0]->id);
+                break;
+            case 'resource': // File
+                $content = self::get_files_from_resource(
+                    $mod[1]->id,
+                    $mod[0]->id
+                );
+                break;
+            case 'folder':
+                $folder_files = self::get_folder_files(
+                    $mod[1]->id,
+                    $mod[0]->id,
+                    $mod[0]->name,
+                    $mod[0]->intro
+                );
+                $content = $folder_files->content;
+                break;
+            case 'glossary':
+                $content = self::get_glossary_entries($mod[1]->id, $mod[0]->id, $mod[0]->name);
+                break;
+        }
+
+        return $content;
     }
 
     /**
@@ -198,7 +206,7 @@ class course_modules
         }
         $module->content = base64_encode($module_content);
 
-        return $module;
+        return $module_content;
     }
 
     /**
@@ -216,7 +224,7 @@ class course_modules
         foreach ($chapters as $chapter) {
             $content .= $chapter->content;
         }
-        return $content;
+        return strip_tags($content);
     }
 
     /**
@@ -282,26 +290,9 @@ class course_modules
             $glossary->files = new \stdClass();
         }
 
-        return $glossary;
+        return strip_tags($glossary->content);
     }
 
-    public static function get_forum_content($id, $name)
-    {
-        global $DB;
-        // Get forum discussions
-        $forum_discussions = $DB->get_records('forum_discussions', array('forum' => $id));
-        $html = '';
-        foreach ($forum_discussions as $fd) {
-            // Get forum posts
-            $forum_posts = $DB->get_records('forum_posts', array('discussion' => $fd->id));
-            foreach ($forum_posts as $fp) {
-                $html .= '<h3>' . $fp->subject . '</h3>';
-                $html .= $fp->message . "\n";
-            }
-        }
-
-        return $html;
-    }
 
     /**
      * Get files from resource
@@ -365,7 +356,8 @@ class course_modules
      * @return string
      * @throws \Exception
      */
-    public static function get_pdf_content($path) {
+    public static function get_pdf_content($path)
+    {
         global $CFG;
         require_once($CFG->dirroot . '/blocks/learningassist/classes/pdfparser/alt_autoload.php-dist');
         $content = '';
@@ -381,7 +373,8 @@ class course_modules
      * @param $path
      * @return string
      */
-    public static function get_docx_content($path) {
+    public static function get_docx_content($path)
+    {
         global $CFG;
         $striped_content = '';
         $content = '';
@@ -458,7 +451,7 @@ class course_modules
                 // Get the content of the file
                 $content = file_get_contents($path . $file_name);
                 $folder_files[$i] = new \stdClass();
-                $folder_files[$i]->content = base64_encode($content);
+                $folder_files[$i]->content = $content;
                 $folder_files[$i]->file_name = $file->get_filename();
                 $folder_files[$i]->mime_type = $file->get_mimetype();
                 // Delete the file

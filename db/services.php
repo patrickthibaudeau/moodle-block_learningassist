@@ -9,4 +9,13 @@ $functions = array(
         'capabilities' => '',
         'ajax' => true
     ),
+    'block_learningassist_display_course_modules' => array(
+        'classname' => 'block_learningassist_course_modules',
+        'methodname' => 'display_modules',
+        'classpath' => 'blocks/learningassist/classes/external/course_modules.php',
+        'description' => 'This function displays all course modules',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => true
+    ),
 );

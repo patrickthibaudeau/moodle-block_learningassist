@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'block_learningassist';
 $plugin->release = '0.0.0';
-$plugin->version = 2025040900.03;
+$plugin->version = 2025041100.02;
 $plugin->requires = 2025032100;
 $plugin->maturity = MATURITY_ALPHA;

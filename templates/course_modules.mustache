@@ -1,0 +1,37 @@
+<style>
+    .activityiconcontainer {
+        display: inline !important;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="blockAiAssistantFolder">
+            {{#sections}}
+                <div class="blockAiAssistant" data-id="{{idname}}"><i
+                        class="fa fa-folder blockAiAssistantFolderIcon"></i> {{name}} ({{number_of_modules}})
+                </div>
+                <div class="blockAiAssistantContent-{{idname}} mb-1" style="display: none;">
+                    {{#modules}}
+                        <div class="activitytitle media modtype_{{modname}} position-relative align-self-start mt-1 mb-1">
+                            <label>
+                                <div class="d-flex align-items-center">
+                                    <a href="{{config.wwwroot}}/blocks/learningassist/chat.php?courseid={{courseid}}&chattype={{chat_type}}&cmid={{cmid}}" >
+                                    <span class="activityiconcontainer {{icontype}} "
+                                          style="width: 24px; height:24px;">
+
+                                    <img src="{{icon}}?filtericon=1" class="activityicon " alt="{{modname}} icon">
+
+                                </span>
+                                    <span class="activityname">
+                                        {{name}} <span id="block-aia-trained-status-{{cmid}}"{{{trained}}}</span>
+                                    </span>
+                                    </a>
+                                </div>
+                            </label>
+                        </div>
+                    {{/modules}}
+                </div>
+            {{/sections}}
+        </div>
+    </div>
+</div>

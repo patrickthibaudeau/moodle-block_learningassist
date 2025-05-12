@@ -71,6 +71,7 @@ class block_learningassist extends block_base
         $course_context = context_course::instance($this->page->course->id);
 
         $this->page->requires->js_call_amd('block_learningassist/ai_policy', 'init');
+        $this->page->requires->js_call_amd('block_learningassist/course_modules', 'init');
 
 
         $data = array(
