@@ -23,8 +23,7 @@ abstract class gen_ai
     public static function make_call(string $prompt, array $history, string $lang = 'en'): ?string
     {
         global $CFG;
-        include("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown/Process/ParseMarkdown.php");
-        include("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown.php");
+
         // Always return the response in the language of the course
         $prompt .= "\n\nYou must return the response in the language based on this language code: $lang.\n\n";
 
@@ -60,12 +59,7 @@ abstract class gen_ai
             $provider_config->apiversion
         );
 
-        // Set Markdown parser
-        $markdown = \FastVolt\Helper\Markdown::new();
-        $markdown->setContent($response);
-        $content = $markdown->toHTML();
-
-        return html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');;
+        return markdown_to_html($response);
 
     }
 
@@ -119,6 +113,41 @@ abstract class gen_ai
         return $content;
 
     }
+
+
+    /**
+     * This function creates an OpenAI chat session
+     */
+    public static function openai_chat($messages, $api_key, $model = 'gpt-3.5-turbo'): string
+    {
+        $url = 'https://api.openai.com/v1/chat/completions';
+
+        $headers = [
+            "Content-Type: application/json",
+            "Authorization: Bearer $api_key"
+        ];
+
+        $data = [
+            "model" => $model,
+            "messages" => $messages,
+            "max_tokens" => 4096,
+            "temperature" => 0.7
+        ];
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        $response = json_decode($result, true);
+        $content = $response['choices'][0]['message']['content'] ?? '';
+        return $content;
+    }
+
+
 
     /**
      * Get the cache instance for chat history.
