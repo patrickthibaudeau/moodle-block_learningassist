@@ -5,53 +5,58 @@ namespace block_learningassist;
 require_once("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown.php");
 require_once("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown/Process/ParseMarkdown.php");
 
+use core\di;
+use core\exception\coding_exception;
+use core_ai\manager;
+use Exception;
 use FastVolt\Helper;
 
 abstract class gen_ai
 {
+
     /**
-     * This function uses the built in Moodle AI providers and placements
-     * @param $context \stdClass
+     * This function uses the built-in Moodle AI providers and placements
      * @param $prompt string
-     * @param bool $decode bool Wheter to JSON decode the response or not
-     * @return mixed
+     * @param string $lang
+     * @return string|null
+     * @throws Exception
      */
-    public static function make_call($system_message, $prompt, $lang = 'en', $decode = false)
+    public static function make_call(string $prompt, array $history, string $lang = 'en'): ?string
     {
-        global $USER;
         // Always return the response in the language of the course
         $prompt .= "\n\nYou must return the response in the language based on this language code: $lang.\n\n";
 
         $messages = array(
-            array(
-                'role' => 'system',
-                'content' => $system_message
-            ),
+            ...$history,
             array(
                 'role' => 'user',
                 'content' => $prompt
             ),
+
         );
+
         // Get AI manager.
-        $manager = \core\di::get(\core_ai\manager::class);
+        $manager = di::get(manager::class);
+
         // Get provider instances
-        $provider_instances = $manager->get_provider_instances();
-        foreach ($provider_instances as $provider_instance) {
-            // Check if the provider is enabled
-            if ($provider_instance->enabled == true) {
-                switch ($provider_instance->provider) {
-                    case 'aiprovider_azureai':
-                        $provider = self::get_azure_provider($provider_instance);
-                        $response = self::azure_openai_chat($messages,
-                            $provider->apikey,
-                            $provider->endpoint,
-                            $provider->deployment,
-                            $provider->apiversion
-                        );
-                        break;
-                }
-            }
+        $provider_instances = $manager->get_provider_instances(['provider' => 'aiprovider_azureai\\provider']);
+
+        // Get first item in the array
+        $provider_instance = reset($provider_instances);
+
+        if (empty($provider_instance)) {
+            throw new Exception('No provider instances found');
         }
+
+        // log to file
+        $provider_config = self::get_text_provider($provider_instance);
+        $response = self::azure_openai_chat(
+            $messages,
+            $provider_config->apikey,
+            $provider_config->endpoint,
+            $provider_config->deployment,
+            $provider_config->apiversion
+        );
 
         // Set Markdown parser
         $markdown = Helper\Markdown::new();
@@ -64,7 +69,8 @@ abstract class gen_ai
      * @param $provider_instance \core_ai\provider_instance
      * @return \stdClass
      */
-    private static function get_azure_provider($provider_instance) {
+    private static function get_text_provider($provider_instance): \stdClass
+    {
         $provider = new \stdClass();
         $provider->apikey = $provider_instance->config['apikey'];
         $provider->endpoint = $provider_instance->config['endpoint'];
@@ -80,18 +86,21 @@ abstract class gen_ai
     /**
      * This function creates an Azure OprenAI chat session
      */
-    public static function azure_openai_chat($messages, $api_key, $endpoint, $deployment_id, $api_version)
+    public static function azure_openai_chat($messages, $api_key, $endpoint, $deployment_id, $api_version): array|string
     {
         $url = $endpoint . "/openai/deployments/$deployment_id/chat/completions?api-version=$api_version";
+
         $headers = [
             "Content-Type: application/json",
             "api-key: $api_key"
         ];
+
         $data = [
             "messages" => $messages,
             "max_tokens" => 4096,
             "temperature" => 0.7
         ];
+
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -99,9 +108,67 @@ abstract class gen_ai
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $result = curl_exec($ch);
         curl_close($ch);
+
         $response = json_decode($result, true);
         $content = $response['choices'][0]['message']['content'] ?? '';
-        $content = str_replace('```html', '', $content);
-        return $content;
+        return str_replace('```html', '', $content);
+
     }
+
+    /**
+     * Get the cache instance for chat history.
+     * @return \cache_application
+     */
+    private static function get_cache(): \cache_application
+    {
+        return \cache::make('block_learningassist', 'chat_history');
+    }
+
+    /**
+     * Get chat history for a specific chatid.
+     * @param string $chatid
+     * @return array
+     * @throws coding_exception
+     */
+    public static function get_history(string $chatid): array
+    {
+        $cache = self::get_cache();
+        $key = self::normalize_cache_key($chatid);
+        $history = $cache->get($key);
+        return ($history === false || !is_array($history)) ? [] : $history;
+    }
+
+
+    private static function normalize_cache_key(string $key): string
+    {
+        return sha1($key);
+    }
+
+    /**
+     * Set full history for a specific chatid.
+     * @param string $chatid
+     * @param array $history
+     */
+    public static function set_history(string $chatid, array $history): void
+    {
+        $cache = self::get_cache();
+        $key = self::normalize_cache_key($chatid);
+        $cache->set($key, $history);
+    }
+
+
+    /**
+     * Add an entry to the chat history.
+     * @param string $chatid
+     * @param string $role
+     * @param string $content
+     * @throws coding_exception
+     */
+    public static function add_to_history(string $chatid, string $role, string $content): void
+    {
+        $history = self::get_history($chatid);
+        $history[] = ['role' => $role, 'content' => $content];
+        self::set_history($chatid, $history);
+    }
+
 }

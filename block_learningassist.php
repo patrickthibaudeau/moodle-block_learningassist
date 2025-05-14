@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
 /**
  * Block learningassist is defined here.
  *
@@ -22,6 +23,7 @@
  */
 
 use aiplacement_editor\utils;
+use core_ai\aiactions\generate_text;
 use core_ai\manager;
 
 class block_learningassist extends block_base
@@ -29,8 +31,9 @@ class block_learningassist extends block_base
 
     /**
      * Initializes class member variables.
+     * @throws coding_exception
      */
-    public function init()
+    public function init(): void
     {
         // Needed by Moodle to differentiate between blocks.
         $this->title = get_string('pluginname', 'block_learningassist');
@@ -39,11 +42,12 @@ class block_learningassist extends block_base
     /**
      * Returns the block contents.
      *
-     * @return stdClass The block contents.
+     * @return string|stdClass The block contents.
+     * @throws \core\exception\moodle_exception
      */
-    public function get_content()
+    public function get_content(): string|stdClass
     {
-        global $OUTPUT, $DB, $USER;
+        global $OUTPUT, $USER;
 
         if ($this->content !== null) {
             return $this->content;
@@ -58,10 +62,10 @@ class block_learningassist extends block_base
         $is_html_editor_placement_action_available = utils::is_html_editor_placement_action_available(
             context_course::instance($this->page->course->id),
             'generate_text',
-            \core_ai\aiactions\generate_text::class
+            generate_text::class
         );
 
-       $policy_status = manager::get_user_policy_status($USER->id);
+        $policy_status = manager::get_user_policy_status($USER->id);
 
         $this->content = new stdClass();
         $this->content->items = array();
@@ -84,8 +88,6 @@ class block_learningassist extends block_base
         );
 
         $this->content->text = $OUTPUT->render_from_template('block_learningassist/block_learningassist', $data);
-
-
         return $this->content;
     }
 
@@ -93,8 +95,9 @@ class block_learningassist extends block_base
      * Defines configuration data.
      *
      * The function is called immediately after init().
+     * @throws coding_exception
      */
-    public function specialization()
+    public function specialization(): void
     {
         // Load user defined title and make sure it's never empty.
         if (empty($this->config->title)) {
@@ -109,7 +112,7 @@ class block_learningassist extends block_base
      *
      * @return bool True if the global configuration is enabled.
      */
-    public function has_config()
+    public function has_config(): bool
     {
         return true;
     }
@@ -119,7 +122,7 @@ class block_learningassist extends block_base
      *
      * @return string[] Array of pages and permissions.
      */
-    public function applicable_formats()
+    public function applicable_formats(): array
     {
         return array(
             'course-view' => true,

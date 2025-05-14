@@ -491,7 +491,7 @@ class course_modules
      * @param stdClass $data $courseid, $cmid, $modname
      * @return int
      */
-    public static function insert_record($data)
+    public static function insert_record($data): int
     {
         global $DB, $USER;
 

@@ -12,13 +12,14 @@ class block_learningassist_chat extends external_api
      * Returns description of method parameters
      * @return external_function_parameters
      */
-    public static function chat_parameters()
+    public static function chat_parameters(): external_function_parameters
     {
         return new external_function_parameters(
             array(
                 'courseid' => new external_value(PARAM_INT, 'Course id', VALUE_REQUIRED),
                 'chattype' => new external_value(PARAM_TEXT, 'Chat Type', VALUE_REQUIRED),
-                'prompt' => new external_value(PARAM_TEXT, 'User prompt', VALUE_REQUIRED)
+                'prompt' => new external_value(PARAM_TEXT, 'User prompt', VALUE_REQUIRED),
+                'chatid' => new external_value(PARAM_TEXT, 'Chat ID', VALUE_REQUIRED),
             )
         );
     }
@@ -26,42 +27,56 @@ class block_learningassist_chat extends external_api
     /**
      * Chat with AI
      * @param int $course_id
-     * @param string $message
+     * @param $chat_type
+     * @param $prompt
      * @return string
-     * @throws dml_exception
+     * @throws \core_external\restricted_context_exception
+     * @throws coding_exception
      * @throws invalid_parameter_exception
-     * @throws restricted_context_exception
+     * @throws Exception
      */
-    public static function chat($course_id, $chat_type, $prompt)
+    public static function chat(int $course_id, $chat_type, $prompt, $chatid): string
     {
-        global $OUTPUT;
-
-        //Parameter validation
-        $params = self::validate_parameters(
+        self::validate_parameters(
             self::chat_parameters(),
-            array(
+            [
                 'courseid' => $course_id,
                 'chattype' => $chat_type,
-                'prompt' => $prompt
-            )
+                'prompt' => $prompt,
+                'chatid' => $chatid
+            ]
         );
 
-        $system_message =  "\n\n" . '' . get_string($chat_type . '_system_message', 'block_learningassist') . "\n";
+        $system_message = "\n\n" . get_string($chat_type . '_system_message', 'block_learningassist') . "\n";
 
-        //Context validation
+        // Validate context
         $context = \context_course::instance($course_id);
         self::validate_context($context);
 
-        $response = gen_ai::make_call($system_message, $prompt);
+        // Get or create history
+        $history = gen_ai::get_history($chatid);
+        if (empty($history)) {
+            $history[] = ['role' => 'system', 'content' => $system_message];
+            gen_ai::add_to_history($chatid, 'system', $system_message);
+        }
+
+        // Add the user message
+        gen_ai::add_to_history($chatid, 'user', $prompt);
+
+        // Append full history
+        $response = gen_ai::make_call($prompt, $history);
+
+        // Save assistant reply to history
+        gen_ai::add_to_history($chatid, 'assistant', $response);
 
         return $response;
     }
 
     /**
      * Returns method result value
-     * @return external_description
+     * @return external_value|external_description
      */
-    public static function chat_returns()
+    public static function chat_returns(): external_value|external_description
     {
         return new external_value(PARAM_RAW, 'Response from AI');
     }
