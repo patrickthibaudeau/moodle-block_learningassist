@@ -21,9 +21,16 @@ $context = context_course::instance($course_id);
 $content = course_modules::get_module_content($cmid);
 $chat_header = course_modules::get_instance_name($cmid);
 
-$system_message = get_string($chat_type . '_system_message', 'block_learningassist') . "\n";
-$system_message .= $content;
-$prompt = get_string($chat_type . '_prompt', 'block_learningassist');
+// The system message and promtp must be different based on the type of chat.
+if ($chat_type == 'tutor') {
+    $system_message = get_string($chat_type . '_system_message', 'block_learningassist') . "\n";
+    $system_message .= $content;
+    $prompt = get_string($chat_type . '_prompt', 'block_learningassist');
+} else if ($chat_type == 'quiz') {
+    $system_message = get_string($chat_type . '_system_message', 'block_learningassist');
+    $prompt = $content . "\n\n" . get_string($chat_type . '_prompt', 'block_learningassist');
+}
+
 
 $messages = [
     [

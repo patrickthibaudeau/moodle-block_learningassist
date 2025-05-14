@@ -29,7 +29,7 @@ $string['learning_assist_chat'] = 'AI Learning Assistant chat';
 $string['loading'] = 'Loading...';
 $string['pluginname'] = 'AI Learning Assistant';
 $string['quiz'] = 'AI Quiz';
-$string['quiz_system_message'] = 'I want you to act as a friendly teacher who fully understands the following content: ';
+$string['quiz_system_message'] = 'I want you to act as a friendly Use the following content: ';
 $string['quiz_prompt'] = 'Please prepare a multiple choice quiz with 10 questions with four possible choices, labelled A, B, C, and D. 
 Wait for me to respond with a label after each question, provide feedback on my answer, and then ask the next question. 
 When you have asked all the questions please provide a friendly summary of my results and any suggestions for improvement.';

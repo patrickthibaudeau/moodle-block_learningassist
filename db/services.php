@@ -18,4 +18,13 @@ $functions = array(
         'capabilities' => '',
         'ajax' => true
     ),
+    'block_learningassist_remove_chat_history' => array(
+        'classname' => 'block_learningassist_chat',
+        'methodname' => 'clear_history',
+        'classpath' => 'blocks/learningassist/classes/external/chat.php',
+        'description' => 'This function clears the chat history',
+        'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true
+    ),
 );

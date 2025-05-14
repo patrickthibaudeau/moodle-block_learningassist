@@ -2,14 +2,13 @@
 
 namespace block_learningassist;
 
-require_once("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown.php");
-require_once("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown/Process/ParseMarkdown.php");
+
+
 
 use core\di;
 use core\exception\coding_exception;
 use core_ai\manager;
 use Exception;
-use FastVolt\Helper;
 
 abstract class gen_ai
 {
@@ -23,6 +22,9 @@ abstract class gen_ai
      */
     public static function make_call(string $prompt, array $history, string $lang = 'en'): ?string
     {
+        global $CFG;
+        include("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown/Process/ParseMarkdown.php");
+        include("$CFG->dirroot/blocks/learningassist/classes/markdown/src/Markdown.php");
         // Always return the response in the language of the course
         $prompt .= "\n\nYou must return the response in the language based on this language code: $lang.\n\n";
 
@@ -59,9 +61,12 @@ abstract class gen_ai
         );
 
         // Set Markdown parser
-        $markdown = Helper\Markdown::new();
+        $markdown = \FastVolt\Helper\Markdown::new();
         $markdown->setContent($response);
-        return $markdown->toHTML();
+        $content = $markdown->toHTML();
+
+        return html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');;
+
     }
 
     /**
@@ -111,7 +116,7 @@ abstract class gen_ai
 
         $response = json_decode($result, true);
         $content = $response['choices'][0]['message']['content'] ?? '';
-        return str_replace('```html', '', $content);
+        return $content;
 
     }
 
@@ -154,6 +159,17 @@ abstract class gen_ai
         $cache = self::get_cache();
         $key = self::normalize_cache_key($chatid);
         $cache->set($key, $history);
+    }
+
+    /**
+     * Clear the chat history for a specific chatid.
+     * @param string $chatid
+     */
+    public static function clear_history(string $chatid): void
+    {
+        $cache = self::get_cache();
+        $key = self::normalize_cache_key($chatid);
+        $cache->delete($key);
     }
 
 

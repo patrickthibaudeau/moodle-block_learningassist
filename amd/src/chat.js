@@ -54,6 +54,24 @@ export const sendMessage = async () => {
 };
 
 
+window.addEventListener('beforeunload', () => {
+  const chatIdElement = document.getElementById('block-learningassist-chatid');
+  if (chatIdElement) {
+    const chatId = chatIdElement.value;
+    // Run ajax call to clear history
+    ajax.call([{
+      methodname: 'block_learningassist_clear_chat_history',
+      args: {
+        chatid: chatId
+      },
+    }]).then(() => {
+      console.log('Chat history cleared');
+    }).catch((error) => {
+      console.error('Error clearing chat history:', error);
+    });
+  }
+});
+
 document.getElementById('block-learningassist-chat-send-btn').addEventListener('click', sendMessage);
 
 document.getElementById('block-learningassist-chat-input').addEventListener('keydown', (e) => {
