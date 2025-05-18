@@ -393,26 +393,31 @@ class course_modules
     public static function get_docx_content($path)
     {
         global $CFG;
-        $striped_content = '';
-        $content = '';
+        require_once($CFG->dirroot . '/blocks/learningassist/classes/docx2md/docx2md.php');
+        $converter = new \Docx2md\Docx2md();
+        $result = $converter->parseFile($path);
 
-        // Open zip file
-        $zip = new \ZipArchive();
-        if ($zip->open($path) === true) {
-            // Read the content of the document.xml file
-            $xml = $zip->getFromName('word/document.xml');
-            // Close the zip file
-            $zip->close();
-            // Load the XML content
-            $xml = simplexml_load_string($xml);
-            // Register the namespaces
-            $xml->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
-            // Get the text content
-            foreach ($xml->xpath('//w:t') as $text) {
-                $striped_content .= (string)$text;
-            }
-        }
-        return $striped_content;
+        return $result->markdown;
+//        $striped_content = '';
+//        $content = '';
+//
+//        // Open zip file
+//        $zip = new \ZipArchive();
+//        if ($zip->open($path) === true) {
+//            // Read the content of the document.xml file
+//            $xml = $zip->getFromName('word/document.xml');
+//            // Close the zip file
+//            $zip->close();
+//            // Load the XML content
+//            $xml = simplexml_load_string($xml);
+//            // Register the namespaces
+//            $xml->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+//            // Get the text content
+//            foreach ($xml->xpath('//w:t') as $text) {
+//                $striped_content .= (string)$text;
+//            }
+//        }
+//        return $striped_content;
     }
 
 

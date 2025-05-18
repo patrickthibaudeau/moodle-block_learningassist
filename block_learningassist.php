@@ -77,6 +77,18 @@ class block_learningassist extends block_base
         $this->page->requires->js_call_amd('block_learningassist/ai_policy', 'init');
         $this->page->requires->js_call_amd('block_learningassist/course_modules', 'init');
 
+        // Check to see if block_ai_assistant exists
+        $installed_blocks = $this->page->blocks->get_installed_blocks();
+        $block_ai_assistant = array_filter($installed_blocks, function($block) {
+            return $block->name === 'ai_assistant';
+        });
+
+        if ($block_ai_assistant) {
+            $block_ai_assistant = true;
+        } else {
+            $block_ai_assistant = false;
+        }
+
 
         $data = array(
             'ai_placement_editor_enabled' => $is_html_editor_placement_action_available,
@@ -85,6 +97,7 @@ class block_learningassist extends block_base
             'blockid' => $this->instance->id,
             'course_contextid' => $course_context->id,
             'ai_policy_status' => $policy_status,
+            'ai_assistant_block_exists' => $block_ai_assistant
         );
 
         $this->content->text = $OUTPUT->render_from_template('block_learningassist/block_learningassist', $data);
