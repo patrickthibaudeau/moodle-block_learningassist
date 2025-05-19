@@ -199,6 +199,11 @@ class course_modules
      */
     public static function set_module_content($id, $name, $intro, $content, $module_type)
     {
+        // Load html to markdown converter
+        global $CFG;
+        require_once($CFG->dirroot . '/blocks/learningassist/classes/html2markdown/vendor/autoload.php');
+        $converter = new \League\HTMLToMarkdown\HtmlConverter();
+
         //Create object
         $module = new \stdClass();
         // Set default variable values
@@ -223,7 +228,7 @@ class course_modules
         }
         $module->content = base64_encode($module_content);
 
-        return $module_content;
+        return $converter->convert($module_content);
     }
 
     /**
@@ -387,10 +392,10 @@ class course_modules
 
     /**
      * Get DOCX Content
-     * @param $path
+     * @param $path string
      * @return string
      */
-    public static function get_docx_content($path)
+    public static function get_docx_content(string $path) :string
     {
         global $CFG;
         require_once($CFG->dirroot . '/blocks/learningassist/classes/docx2md/docx2md.php');
