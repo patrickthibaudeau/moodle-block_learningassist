@@ -2,6 +2,8 @@
 
 namespace block_learningassist;
 
+use stdClass;
+
 class course_modules
 {
     /**
@@ -9,7 +11,7 @@ class course_modules
      * @param $course_id
      * @return stdClass
      */
-    public static function get_course_modules($courseid)
+    public static function get_course_modules(int $courseid): stdClass
     {
         global $DB, $OUTPUT;
 
@@ -101,7 +103,7 @@ class course_modules
      * @return array
      * @throws \moodle_exception
      */
-    public static function get_module_from_cmid($cmid)
+    public static function get_module_from_cmid(int $cmid): array
     {
         global $DB;
         if (!$cmrec = $DB->get_record_sql("SELECT cm.*, md.name as modname
@@ -126,7 +128,7 @@ class course_modules
      * @return array|stdClass|string
      * @throws \moodle_exception
      */
-    public static function get_module_content($cmid)
+    public static function get_module_content(int $cmid): string
     {
         // Get module
         $mod = self::get_module_from_cmid($cmid);
@@ -183,7 +185,8 @@ class course_modules
      * @return mixed
      * @throws \moodle_exception
      */
-    public static function get_instance_name($cmid) {
+    public static function get_instance_name(int $cmid): string
+    {
         $mod = self::get_module_from_cmid($cmid);
         return $mod[0]->name;
     }
@@ -195,9 +198,9 @@ class course_modules
      * @param $intro
      * @param $content
      * @param $module_type
-     * @return stdClass
+     * @return string
      */
-    public static function set_module_content($id, $name, $intro, $content, $module_type)
+    public static function set_module_content(int $id, string $name, string $intro, string $content, string $module_type): string
     {
         // Load html to markdown converter
         global $CFG;
@@ -236,7 +239,7 @@ class course_modules
      * @param $cmid
      * @return string
      */
-    public static function get_book_content($book_id)
+    public static function get_book_content(int $book_id): string
     {
         global $CFG, $DB;
 
@@ -246,7 +249,7 @@ class course_modules
         foreach ($chapters as $chapter) {
             $content .= $chapter->content;
         }
-        return strip_tags($content);
+        return $content;
     }
 
     /**
@@ -255,7 +258,7 @@ class course_modules
      * @param $id
      * @return stdClass
      */
-    public static function get_glossary_entries($cmid, $id, $name)
+    public static function get_glossary_entries(int $cmid, int $id, string $name): string
     {
         global $CFG, $DB;
 
@@ -312,7 +315,7 @@ class course_modules
             $glossary->files = new \stdClass();
         }
 
-        return strip_tags($glossary->content);
+        return $glossary->content;
     }
 
 
@@ -321,7 +324,7 @@ class course_modules
      * @param $cmid
      * @return array
      */
-    public static function get_files_from_resource($cmid, $id)
+    public static function get_files_from_resource(int $cmid, int $id): string
     {
         global $CFG;
 
@@ -368,7 +371,6 @@ class course_modules
             }
         }
 
-
         return $content;
     }
 
@@ -378,7 +380,7 @@ class course_modules
      * @return string
      * @throws \Exception
      */
-    public static function get_pdf_content($path)
+    public static function get_pdf_content(string $path): string
     {
         global $CFG;
         require_once($CFG->dirroot . '/blocks/learningassist/classes/pdfparser/alt_autoload.php-dist');
@@ -395,7 +397,7 @@ class course_modules
      * @param $path string
      * @return string
      */
-    public static function get_docx_content(string $path) :string
+    public static function get_docx_content(string $path): string
     {
         global $CFG;
         require_once($CFG->dirroot . '/blocks/learningassist/classes/docx2md/docx2md.php');
@@ -415,7 +417,7 @@ class course_modules
      * @param $intro
      * @return stdClass
      */
-    public static function get_folder_files($cmid, $id, $name, $intro)
+    public static function get_folder_files(int $cmid, int $id, string $name, string $intro)
     {
         global $CFG, $DB;
 
@@ -555,7 +557,7 @@ class course_modules
      * @param $availability
      * @return void
      */
-    private static function get_availability_content($name, $availability)
+    private static function get_availability_content(string $name, string $availability): string
     {
         $availability = json_decode($availability);
 
@@ -599,7 +601,7 @@ class course_modules
      * @param $course_id
      * @return stdClass
      */
-    public static function upload_course_dates($courseid)
+    public static function upload_course_dates(int $courseid)
     {
         global $DB, $CFG;
         $config = get_config('block_ai_assistant');
