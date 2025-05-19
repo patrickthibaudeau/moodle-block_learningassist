@@ -398,26 +398,7 @@ class course_modules
         $result = $converter->parseFile($path);
 
         return $result->markdown;
-//        $striped_content = '';
-//        $content = '';
-//
-//        // Open zip file
-//        $zip = new \ZipArchive();
-//        if ($zip->open($path) === true) {
-//            // Read the content of the document.xml file
-//            $xml = $zip->getFromName('word/document.xml');
-//            // Close the zip file
-//            $zip->close();
-//            // Load the XML content
-//            $xml = simplexml_load_string($xml);
-//            // Register the namespaces
-//            $xml->registerXPathNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
-//            // Get the text content
-//            foreach ($xml->xpath('//w:t') as $text) {
-//                $striped_content .= (string)$text;
-//            }
-//        }
-//        return $striped_content;
+
     }
 
 
