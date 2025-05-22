@@ -2,6 +2,7 @@ import {get_string as getString} from 'core/str';
 // import Templates from 'core/templates';
 import ajax from 'core/ajax';
 
+/* eslint-disable no-console */
 export const sendMessage = async () => {
   const input = document.getElementById('block-learningassist-chat-input');
   const prompt = input.value;
@@ -47,7 +48,7 @@ export const sendMessage = async () => {
         chatMessages.innerHTML += bot_html;
         input.focus();
       }).fail((error) => {
-        console.log(error)
+        console.log(error);
       });
     }
   }
