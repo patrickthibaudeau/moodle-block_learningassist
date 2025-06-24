@@ -27,6 +27,9 @@ defined('MOODLE_INTERNAL') || die();
 $string['cancel'] = 'Cancel';
 $string['learning_assist_chat'] = 'AI Learning Assistant chat';
 $string['loading'] = 'Loading...';
+$string['no_content_trained'] = 'No content has been trained yet. The AI Learning Assistant needs to be trained on '
+    . 'content before it can assist you. Note that the AI Learning Assistant will automatically train itself on content '
+    . 'made available to students in this course. ';
 $string['pluginname'] = 'AI Learning Assistant';
 $string['quiz'] = 'AI Quiz';
 $string['quiz_system_message'] = 'I want you to act as a friendly Use the following content: ';

@@ -22,9 +22,8 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use aiplacement_editor\utils;
-use core_ai\aiactions\generate_text;
-use core_ai\manager;
+use block_ai_assistant\cria;
+use block_learningassist\task\course_module_trainer;
 
 class block_learningassist extends block_base
 {
@@ -47,7 +46,81 @@ class block_learningassist extends block_base
      */
     public function get_content(): string|stdClass
     {
-        global $OUTPUT, $USER;
+        global $OUTPUT, $USE, $DB, $CFG, $USER;
+
+        // Because this block is dependent on the AI Assistant block, we need to ensure that the
+        // bot either exists or is created.
+        $ai_assistant_config = get_config('block_ai_assistant');
+
+        $availability = cria::get_availability();
+        if ($availability->exception == 'success') {
+            if (!$course_record = $DB->get_record(
+                'block_aia_settings',
+                array(
+                    'courseid' => $this->page->course->id
+                )
+            )) {
+                $record = new stdClass();
+                $record->courseid = $this->page->course->id;
+                $record->blockid = $this->instance->id;
+                $record->bot_name = cria::create_bot_instance($this->page->course->id);
+                $record->no_context_message = $ai_assistant_config->no_context_message;
+                $record->subtitle = $ai_assistant_config->subtitle;
+                $record->welcome_message = $ai_assistant_config->welcome_message;
+                $record->lang = $ai_assistant_config->default_language;
+                $record->published = 0;
+                $record->usermodified = $USER->id;
+                $record->timecreated = time();
+                $record->timemodified = time();
+                $DB->insert_record('block_aia_settings', $record);
+                $small_talk = cria::create_small_talk_questions($this->page->course->id);
+                $course_record = $DB->get_record(
+                    'block_aia_settings',
+                    array(
+                        'courseid' => $this->page->course->id
+                    )
+                );
+            }
+        } else {
+            $course_record = new stdClass();
+            $course_record->courseid = $this->page->course->id;
+            $course_record->cria_file_id = '';
+            $course_record->block_id = '';
+            $course_record->bot_name = '';
+            $course_record->no_context_message = '';
+            $course_record->subtitle = '';
+            $course_record->welcome_message = '';
+            $course_record->lang = '';
+            $course_record->published = 0;
+        }
+
+        if ($availability->exception == 'success') {
+            // Update $course_record->bot_api_key if empty
+            if (empty($course_record->bot_api_key)) {
+                $course_record->bot_api_key = cria::get_api_key(cria::get_bot_id($this->page->course->id));
+
+                $DB->set_field(
+                    'block_aia_settings',
+                    'bot_api_key',
+                    $course_record->bot_api_key,
+                    [
+                        'courseid' => $this->page->course->id
+                    ]
+                );
+            }
+        }
+
+        // Lets check to see that some content has been trained for the bot.
+        if (!$DB->record_exists('block_aia_course_modules', array('courseid' => $this->page->course->id))) {
+            // If no content has been trained, we will not display the block.
+            $this->content = get_string('no_content_trained', 'block_learningassist');
+            // Run ad hoc task to train course modules if not already running.
+            $task = course_module_trainer::instance($this->page->course->id);
+            $task->set_component('block_learningassist');
+            \core\task\manager::queue_adhoc_task($task);
+
+            return $this->content;
+        }
 
         if ($this->content !== null) {
             return $this->content;
@@ -58,14 +131,6 @@ class block_learningassist extends block_base
             return $this->content;
         }
 
-        // Check if AI generate_text is available
-        $is_html_editor_placement_action_available = utils::is_html_editor_placement_action_available(
-            context_course::instance($this->page->course->id),
-            'generate_text',
-            generate_text::class
-        );
-
-        $policy_status = manager::get_user_policy_status($USER->id);
 
         $this->content = new stdClass();
         $this->content->items = array();
@@ -74,30 +139,13 @@ class block_learningassist extends block_base
 
         $course_context = context_course::instance($this->page->course->id);
 
-        $this->page->requires->js_call_amd('block_learningassist/ai_policy', 'init');
         $this->page->requires->js_call_amd('block_learningassist/course_modules', 'init');
 
-        // Check to see if block_ai_assistant exists
-        $installed_blocks = $this->page->blocks->get_installed_blocks();
-        $block_ai_assistant = array_filter($installed_blocks, function($block) {
-            return $block->name === 'ai_assistant';
-        });
-
-        if ($block_ai_assistant) {
-            $block_ai_assistant = true;
-        } else {
-            $block_ai_assistant = false;
-        }
-
-
         $data = array(
-            'ai_placement_editor_enabled' => $is_html_editor_placement_action_available,
             'userid' => $USER->id,
             'courseid' => $this->page->course->id,
             'blockid' => $this->instance->id,
             'course_contextid' => $course_context->id,
-            'ai_policy_status' => $policy_status,
-            'ai_assistant_block_exists' => $block_ai_assistant
         );
 
         $this->content->text = $OUTPUT->render_from_template('block_learningassist/block_learningassist', $data);

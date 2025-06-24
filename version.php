@@ -26,6 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'block_learningassist';
 $plugin->release = '0.0.0';
-$plugin->version = 2025051800;
-$plugin->requires = 2025032100;
+$plugin->version = 2025072300;
+$plugin->requires = 2022112800;
 $plugin->maturity = MATURITY_ALPHA;
+$plugin->dependencies = [
+    'block_ai_assistant' => 2025072200, // Requires the AI Assistant block.
+];
