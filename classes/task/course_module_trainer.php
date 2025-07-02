@@ -62,6 +62,7 @@ class course_module_trainer extends adhoc_task
                             $record->modname = $module->modname;
                             $record->modtimemodified = $module->modtimemodified;
                             $record->cria_fileid = $cria_fileid;
+                            $record->plugin = 'block_learningassist';
                             $record->timecreated = time();
                             $record->timemodified = time();
                             $DB->insert_record('block_aia_course_modules', $record);
