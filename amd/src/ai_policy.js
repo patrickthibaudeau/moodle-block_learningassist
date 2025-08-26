@@ -3,6 +3,7 @@ import ModalEvents from 'core/modal_events';
 import {get_string as getString} from 'core/str';
 import ajax from 'core/ajax';
 
+/* eslint-disable no-console */
 export const init = async () => {
     // Get element with id ai-policy-status
     const policyStatus = document.getElementById('ai-policy-status');
@@ -21,12 +22,12 @@ export const init = async () => {
 
         modal.getRoot().on(ModalEvents.save, () => {
             // Get context id element
-            const contextId = document.getElementById('contextid');
+            const contextId = M.cfg.contextid;
             // Set policy status
             const setPolicyStatus = ajax.call([{
                 methodname: 'core_ai_set_policy_status',
                 args: {
-                    contextid: contextId.value,
+                    contextid: contextId,
                 },
             }]);
 
